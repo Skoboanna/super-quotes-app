@@ -6,6 +6,9 @@ function Quote(index, author, genre, quote) {
   this.author = author;
   this.genre = genre;
   this.quote = quote;
+  this.setId = function(id) {
+    this.index = id;
+  };
 }
 
 function processQuotesFromFile(fileName, callback, arg1, arg2) {
@@ -25,10 +28,39 @@ function processQuotesFromFile(fileName, callback, arg1, arg2) {
   });
 }
 
+function addNewQuote(quotes, newQuote) {
+  newQuote.setId(quotes.length);
+  quotes.push(newQuote);
+
+  fs.writeFile("../src/quotes.json", JSON.stringify(quotes), "utf-8", function(
+    err
+  ) {
+    if (err) {
+      throw err;
+    }
+    console.log("New quote by " + newQuote.author + " added!");
+  });
+}
+
+function removeQuoteById(quotes, id) {
+  let filteredQuotes = quotes.filter(quote => quote.index != id);
+  fs.writeFile(
+    "../src/quotes.json",
+    JSON.stringify(filteredQuotes),
+    "utf-8",
+    function(err) {
+      if (err) {
+        throw err;
+      }
+      console.log("Removed quotes with index = " + id);
+    }
+  );
+}
+
 function readAllQuotes(quotesList) {
   console.log(chalk.bgBlueBright("*** SUPER QUOTES LIST ***"));
   quotesList.forEach(quote => {
-    console.log(chalk.cyan("Author: ") + quote.author);
+    console.log(chalk.cyan("[" + quote.index + "] Author: ") + quote.author);
     console.log(chalk.gray.bold.italic(quote.quote));
     console.log("*   *   *");
   });
@@ -52,5 +84,8 @@ function readQuotesByAuthor(quotesList, name, surname) {
 module.exports = {
   processQuotesFromFile: processQuotesFromFile,
   readAllQuotes: readAllQuotes,
-  readQuotesByAuthor: readQuotesByAuthor
+  readQuotesByAuthor: readQuotesByAuthor,
+  Quote: Quote,
+  addNewQuote: addNewQuote,
+  removeQuoteById: removeQuoteById
 };

@@ -1,15 +1,21 @@
-const fs = require("fs");
+const quotesHandler = require("../quotesOperations");
 
 const addTaskHandler = args => {
-  const newLine = `${args.quote}\n`;
+  const quote = `${args.quote}`;
+  const name = `${args.name}`;
+  const surname = `${args.surname}`;
+  const author = "" + name + " " + surname;
 
-  fs.appendFile("todo.txt", newLine, () => {
-    console.log("Quote has been saved");
-  });
+  let newQuote = new quotesHandler.Quote(5, author, "added", quote);
+  quotesHandler.processQuotesFromFile(
+    "../src/quotes.json",
+    quotesHandler.addNewQuote,
+    newQuote
+  );
 };
 
 module.exports = {
-  command: "add <quote>",
+  command: "add <quote> author <name> <surname>",
   desc: "Add new quote to the list",
   handler: addTaskHandler
 };
