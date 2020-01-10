@@ -1,5 +1,6 @@
 const chalk = require("chalk");
 const fs = require("fs");
+const ax = require("axios");
 
 function Quote(index, author, genre, quote) {
   this.index = index;
@@ -57,27 +58,77 @@ function removeQuoteById(quotes, id) {
   );
 }
 
+function printHeader(subtitle) {
+  console.log(
+    "*   *   *   " +
+      chalk.black.bold.bgRgb(0, 255, 255)("Super ") +
+      chalk.black.bold.bgRgb(255, 0, 255)("Awesome ") +
+      chalk.black.bold.bgRgb(255, 255, 0)("Quotes ") +
+      "   *   *   *\n"
+  );
+  if (subtitle) {
+    console.log("            " + subtitle + "\n");
+  }
+}
+
+function printQuote(quote) {
+  console.log(chalk.rgb(255, 136, 0).bold(quote.quote));
+  console.log(chalk.cyan("[" + quote.index + "] Author: ") + quote.author);
+  console.log(chalk.cyan("     Genre: ") + quote.genre);
+  console.log("*   *   *");
+}
+
 function readAllQuotes(quotesList) {
-  console.log(chalk.bgBlueBright("*** SUPER QUOTES LIST ***"));
+  printHeader();
   quotesList.forEach(quote => {
-    console.log(chalk.cyan("[" + quote.index + "] Author: ") + quote.author);
-    console.log(chalk.gray.bold.italic(quote.quote));
-    console.log("*   *   *");
+    printQuote(quote);
+  });
+}
+
+function printQuoteByKey(quoteList, key, value) {
+  let quotesByKey = quoteList.filter(quote => {
+    return quote[key] == value;
+  });
+
+  quotesByKey.forEach(quote => {
+    printQuote(quote);
   });
 }
 
 function readQuotesByAuthor(quotesList, name, surname) {
   let author = "" + name + " " + surname;
-  console.log(chalk.bgBlueBright("*** SUPER QUOTES LIST ***"));
-  console.log("by " + author);
+  let authorSubtitle = " by " + author;
+  printHeader(authorSubtitle);
+  printQuoteByKey(quotesList, "author", author);
+}
 
-  let quotesByAuthor = quotesList.filter(quote => {
-    return quote.author === author;
-  });
-  quotesByAuthor.forEach(quote => {
-    //console.log(chalk.cyan("Author: ") + quote.author);
-    console.log(chalk.gray.bold.italic(quote.quote));
-    console.log("*   *   *");
+function readQuoteByGenre(quoteList, genre) {
+  printHeader("by genre: " + genre);
+  printQuoteByKey(quoteList, "genre", genre);
+}
+
+function readRandomQuote(quotesList) {
+  let randomQuoteIndex = Math.floor(Math.random() * (quotesList.length - 1));
+  let randomQuote = quotesList[randomQuoteIndex];
+  let subtitle = "Random quote by: " + randomQuote.author;
+  printHeader(subtitle);
+  printQuote(randomQuote);
+}
+
+function displayAndSaveExternalQuote() {
+  ax.get(
+    `http://ec2-18-217-240-10.us-east-2.compute.amazonaws.com/node/quotes.php`
+  ).then(response => {
+    let newQuote = new Quote(
+      response.data.id,
+      response.data.author,
+      "randomGenre",
+      response.data.quote
+    );
+    let subtitle = "Your generated quote";
+    printHeader(subtitle);
+    printQuote(newQuote);
+    processQuotesFromFile("./quotes.json", addNewQuote, newQuote);
   });
 }
 
@@ -87,5 +138,8 @@ module.exports = {
   readQuotesByAuthor: readQuotesByAuthor,
   Quote: Quote,
   addNewQuote: addNewQuote,
-  removeQuoteById: removeQuoteById
+  removeQuoteById: removeQuoteById,
+  readRandomQuote: readRandomQuote,
+  readQuoteByGenre: readQuoteByGenre,
+  displayAndSaveExternalQuote: displayAndSaveExternalQuote
 };

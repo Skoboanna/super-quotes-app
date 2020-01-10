@@ -5,8 +5,9 @@ const addTaskHandler = args => {
   const name = `${args.name}`;
   const surname = `${args.surname}`;
   const author = "" + name + " " + surname;
+  const genre = `${args.genre}`;
 
-  let newQuote = new quotesHandler.Quote(5, author, "added", quote);
+  let newQuote = new quotesHandler.Quote(5, author, genre, quote);
   quotesHandler.processQuotesFromFile(
     "../src/quotes.json",
     quotesHandler.addNewQuote,
@@ -15,7 +16,7 @@ const addTaskHandler = args => {
 };
 
 module.exports = {
-  command: "add <quote> author <name> <surname>",
+  command: "add <quote> author <name> <surname> genre <genre>",
   desc: "Add new quote to the list",
   handler: addTaskHandler
 };
